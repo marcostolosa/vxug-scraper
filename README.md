@@ -28,6 +28,9 @@ Recursive Scraping: Automatically crawls subdirectories on vx-underground.org to
 * Organized Storage: Saves files in a directory structure mirroring the website's hierarchy.
 * Visited URL Tracking: Prevents redundant scraping of already processed directories.
 * User-Friendly Interface: Displays a banner and progress updates during scraping.
+* Concurrency Control: Limit the number of simultaneous downloads per directory (`-c`, `--concurrency`).
+* aria2c Integration: Optionally use `aria2c` for downloads (`-a`, `--aria`) and pass extra arguments with `--aria-opts`.
+* Pre-resume Paused Downloads: When aria2c is enabled (`-a`), the scraper scans for existing `.aria2` control files in the output directory and resumes those downloads before scraping proceeds.
 
 ### Prerequisites
 
@@ -58,16 +61,64 @@ cargo run --release
 
 ### USAGE:
 
-> ⚠️ Use Tool with Caution. You may get banned temporary if you misuse this tool !
+ > ⚠️ Use Tool with Caution. You may get banned temporary if you misuse this tool !
+
+ Show help at any time with `-h` or `--help`.
+ When aria2c is enabled (`-a`), the scraper will first resume any incomplete downloads by scanning for `.aria2` control files in the output directory.
+ 
+ You can optionally specify an output directory with `-o` or `--output-dir`. If not provided, defaults to `Downloads`.
+ 
+ Example: Download the "Papers" collection to a custom directory:
+ 
+```bash
+cargo run --release -- -o /path/to/output Papers
+```
+
+You can also limit the time between requests using `-r` or `--rate-limit`. For example, wait 5 seconds between each HTTP call:
+
+```bash
+cargo run --release -- -r 5
+```
+Limit the number of concurrent downloads per directory using `-c` or `--concurrency`. For example, allow up to 5 simultaneous downloads:
+
+```bash
+cargo run --release -- -c 5
+```
+
+By default, the scraper uses its internal HTTP downloader. To enable `aria2c` for downloads, add the `-a` or `--aria` flag:
+
+```bash
+cargo run --release -- -a Papers
+```
+By default, when using `aria2c`, the scraper applies `-x 4 -s 4` for multi-connection downloads. To override or customize, use `--aria-opts`.
+
+You can pass extra options to `aria2c` with `--aria-opts`. For example:
+
+```bash
+cargo run --release -- -a --aria-opts "-x 10 -s 2" Papers
+```
+Use `--aria-threshold` to only invoke aria2c for files larger than a given size (in bytes). For example, to limit aria2c to files over 100 MB (104857600 bytes):
+
+```bash
+cargo run --release -- -a --aria-threshold 104857600 Papers
+```
+
+Note: Some servers may not support segmented range requests, leading to "Invalid range header" errors. If you encounter these, omit `-a`, or adjust `--aria-opts` (e.g., reduce connections or remove split downloads).
+
+Or combine with output-dir and collection:
+
+```bash
+cargo run --release -- -r 5 -o /path/to/output Papers
+```
 
 
-To scrap all the collections. 
+To scrape all the collections. 
 
 ```bash
 cargo run --release
 ```
 
-To Download a particular Collections !
+To download a particular collection !
 
 ```bash
 cargo run -- <Directory of Page>
@@ -77,13 +128,13 @@ Example:
 
 ![vx-ug](./images/image.png)
 
-Im choosing to download Papers so 
+I'm choosing to download Papers so 
 
 ```bash
 cargo run --release -- Papers
 ```
 
-or if you want to download specfic directories for example. i need to download Windows Papers from Paper collections
+or if you want to download specfic directories for example: I need to download Windows Papers from Paper collections.
 
 ![vx-ug-papers](./images/image-1.png)
 
@@ -91,7 +142,7 @@ or if you want to download specfic directories for example. i need to download W
 cargo run --release -- Papers/Windows
 ```
 
-if the path is contains space. add %20 instead of space..
+If the path is contains space. Add %20 instead of space..
 
 ```bash
 cargo run --release -- Papers/Malware%20Defense
