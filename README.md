@@ -16,6 +16,8 @@
 -------
 <br>
 
+> NOTE: ⚠️ THIS REPOSITORY WILL BE ARCHIVE FROM 07/30/2025 DUE TO CLOUDFLARE CAPTCHA ⚠️
+
 This tool recursively crawls, identifies downloadable files (.pdf, .zip, .7z), and saves them to a Download file.
 
 ### Features:-
